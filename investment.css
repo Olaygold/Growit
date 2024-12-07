@@ -68,3 +68,43 @@ p {
   font-size: 16px;
   color: green;
 }
+
+/* Footer */
+footer {
+  background: #4caf50;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+}
+
+footer a {
+  text-decoration: none;
+  color: white;
+  margin: 0 10px;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+/* Footer - Fixed Navigation Bar */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #4caf50;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
+}
+
+footer a {
+  text-decoration: none;
+  color: white;
+  margin: 0 15px;
+  font-size: 16px;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Plans</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      text-align: center;
+      padding: 10px;
+    }
+    .plan-btn {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .plan-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Investment Plans</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Plan</th>
+        <th>Investment Amount</th>
+        <th>Daily Return</th>
+        <th>Days</th>
+        <th>Total Return</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="investment-plans">
+      <!-- Plans will be dynamically added here -->
+    </tbody>
+  </table>
+  <h2>Investment History</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Plan</th>
+        <th>Amount</th>
+        <th>Daily Return</th>
+        <th>Days Remaining</th>
+        <th>Total Return</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="investment-history">
+      <!-- History will be dynamically added here -->
+    </tbody>
+  </table>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js"></script>
+  <script>
+    // Initialize Firebase
+    
+    Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+  authDomain: "work-98965.firebaseapp.com",
+  databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+  projectId: "work-98965",
+  storageBucket: "work-98965.appspot.com",
+  messagingSenderId: "755408416828",
+  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+};
+
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Investment plans data
+    const plans = [
+      { plan: "Stock 1", amount: 3000, dailyReturn: 1000, days: 5 },
+      { plan: "Stock 2", amount: 5000, dailyReturn: 1700, days: 5 },
+      { plan: "Stock 3", amount: 10000, dailyReturn: 2100, days: 7 },
+      { plan: "Stock 4", amount: 20000, dailyReturn: 4500, days: 10 },
+      { plan: "Stock 5", amount: 50000, dailyReturn: 12500, days: 15 },
+      { plan: "Stock 6", amount: 100000, dailyReturn: 30000, days: 20 }
+    ];
+
+    // Populate investment plans
+    const planTable = document.getElementById("investment-plans");
+    plans.forEach((plan, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${plan.plan}</td>
+        <td>${plan.amount}</td>
+        <td>${plan.dailyReturn}</td>
+        <td>${plan.days}</td>
+        <td>${plan.dailyReturn * plan.days}</td>
+        <td><button class="plan-btn" onclick="invest(${index})">Invest</button></td>
+      `;
+      planTable.appendChild(row);
+    });
+
+    // Invest function
+    function invest(index) {
+      const userId = firebase.auth().currentUser.uid; // Assume logged-in user
+      const plan = plans[index];
+      const newInvestmentRef = db.ref(`investments/${userId}`).push();
+      newInvestmentRef.set({
+        amount: plan.amount,
+        plan: plan.plan,
+        dailyReturn: plan.dailyReturn,
+        daysRemaining: plan.days,
+        totalReturn: plan.dailyReturn * plan.days,
+        startDate: new Date().toISOString(),
+        status: "Active"
+      }).then(() => {
+        alert("Investment added successfully!");
+        fetchInvestmentHistory();
+      }).catch(error => {
+        console.error("Error adding investment:", error);
+      });
+    }
+
+    // Fetch investment history
+    function fetchInvestmentHistory() {
+      const userId = firebase.auth().currentUser.uid; // Assume logged-in user
+      const historyRef = db.ref(`investments/${userId}`);
+      historyRef.once("value", snapshot => {
+        const historyTable = document.getElementById("investment-history");
+        historyTable.innerHTML = ""; // Clear existing history
+        snapshot.forEach(childSnapshot => {
+          const data = childSnapshot.val();
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${data.plan}</td>
+            <td>${data.amount}</td>
+            <td>${data.dailyReturn}</td>
+            <td>${data.daysRemaining}</td>
+            <td>${data.totalReturn}</td>
+            <td>${data.status}</td>
+          `;
+          historyTable.appendChild(row);
+        });
+      });
+    }
+
+    // On page load, fetch investment history
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        fetchInvestmentHistory();
+      } else {
+        alert("Please log in to view investments!");
+      }
+    });
+  </script>
+</body>
+</html>

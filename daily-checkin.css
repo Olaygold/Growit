@@ -1,0 +1,60 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f9f9f9;
+  color: #333;
+}
+
+header {
+  background: #4caf50;
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+}
+
+main {
+  padding: 20px;
+}
+
+.checkin-info, .checkin-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.checkin-info h2, .checkin-section h2 {
+  color: #4caf50;
+}
+
+button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background: #45a049;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #4caf50;
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+}
+
+footer a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+}

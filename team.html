@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Referral Program</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* General Body Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to bottom, #2193b0, #6dd5ed);
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Container */
+    .referral-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Title Styling */
+    .referral-title {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    /* Card Styling */
+    .referral-card {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+      animation: slideIn 1.5s ease-in-out;
+    }
+
+    /* Referral Code Styling */
+    .referral-code {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #ffcc00;
+    }
+
+    /* Commission Amount Styling */
+    .commission-amount {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #4caf50;
+    }
+
+    /* Referral List Styling */
+    .referral-list {
+      background: transparent;
+      border: none;
+    }
+
+    .referral-list .list-group-item {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container referral-container">
+    <h1 class="text-center referral-title">Referral Program</h1>
+    
+    <div class="referral-card">
+      <h3>Your Referral Code</h3>
+      <p id="referralCode" class="referral-code">Loading...</p>
+    </div>
+
+    <div class="referral-card">
+      <h3>Your Referrals</h3>
+      <ul id="referralsList" class="referral-list list-group">
+        <li class="list-group-item">Loading...</li>
+      </ul>
+    </div>
+
+    <div class="referral-card">
+      <h3>Your Total Commission</h3>
+      <p id="commission" class="commission-amount">Loading...</p>
+    </div>
+  </div>
+<div>
+    Are you been invited by a user click hear to enjoy maximum exclusive offers <a href="referral.html">click here!</a>
+</div>
+<div>
+    Referral code not showing?<a href="generate-referral-code.html">click here?</a>
+</div>
+<div class="referral-card">
+    Thw withdrawal aspest of commission will be available in a jiffy!
+</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Authenticate user
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const userId = user.uid;
+        console.log("Logged in as:", userId);
+
+        fetchReferralData(userId);
+      } else {
+        console.error("No user logged in.");
+        window.location.href = "/login.html";
+      }
+    });
+
+    async function fetchReferralData(userId) {
+      try {
+        // Fetch referral code
+        const userRef = ref(db, `users/${userId}/referralCode`);
+        const userSnap = await get(userRef);
+
+        if (userSnap.exists()) {
+          const referralCode = userSnap.val();
+          document.getElementById("referralCode").textContent = referralCode;
+        } else {
+          document.getElementById("referralCode").textContent = "No referral code found.";
+        }
+
+        // Fetch referrals and commissions
+        const referralsRef = ref(db, `referrals/${userId}`);
+        const referralsSnap = await get(referralsRef);
+
+        if (referralsSnap.exists()) {
+          const referrals = referralsSnap.val();
+          const referralList = document.getElementById("referralsList");
+          referralList.innerHTML = ""; // Clear previous list
+
+          let totalCommission = 0;
+          for (const refId in referrals) {
+            const referral = referrals[refId];
+            const listItem = document.createElement("li");
+            listItem.classList.add("list-group-item");
+            listItem.textContent = `Email: ${referral.email}, Commission: ${referral.commission} Naira`;
+            referralList.appendChild(listItem);
+
+            totalCommission += referral.commission;
+          }
+
+          document.getElementById("commission").textContent = `${totalCommission} Naira`;
+        } else {
+          document.getElementById("referralsList").innerHTML = "<li class='list-group-item'>No referrals yet.</li>";
+          document.getElementById("commission").textContent = "0 Naira";
+        }
+      } catch (error) {
+        console.error("Error fetching referral data:", error);
+        document.getElementById("referralCode").textContent = "Error loading referral code.";
+        document.getElementById("referralsList").innerHTML = "<li class='list-group-item'>Error loading referrals.</li>";
+      }
+    }
+  </script>
+</body>
+</html>

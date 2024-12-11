@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Withdrawal History</title>
+  <style>
+      /* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 20px;
+  color: #333;
+}
+
+#history-container {
+  width: 80%;
+  margin: 20px auto;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Withdrawal Item */
+.withdrawal-item {
+  background-color: #f9f9f9;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.withdrawal-item h3 {
+  color: #2c3e50;
+}
+
+.withdrawal-item p {
+  font-size: 14px;
+  color: #333;
+  margin: 5px 0;
+}
+
+.withdrawal-item strong {
+  font-weight: bold;
+}
+
+.withdrawal-item hr {
+  margin-top: 10px;
+  border: 1px solid #eee;
+}
+
+.no-history-message {
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+  margin-top: 20px;
+}
+
+/* Error Message */
+.error-message {
+  color: #e74c3c;
+  text-align: center;
+  font-size: 18px;
+  margin-top: 20px;
+}
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+
+    /**
+     * Function to fetch and display the user's withdrawal history.
+     */
+    function viewWithdrawalHistory(user) {
+      const withdrawalsRef = ref(db, `users/${user.uid}/withdrawals`);
+
+      // Fetch withdrawal history
+      get(withdrawalsRef)
+        .then((snapshot) => {
+          const historyContainer = document.getElementById("history-container");
+          historyContainer.innerHTML = ""; // Clear existing content
+
+          if (snapshot.exists()) {
+            const withdrawals = snapshot.val();
+
+            // Loop through the withdrawals and display them
+            Object.keys(withdrawals).forEach((withdrawalID) => {
+              const withdrawal = withdrawals[withdrawalID];
+              const withdrawalElement = document.createElement("div");
+              withdrawalElement.classList.add("withdrawal-item");
+
+              // Create HTML content for each withdrawal
+              withdrawalElement.innerHTML = `
+                <h3>Withdrawal Request</h3>
+                <p><strong>Account Name:</strong> ${withdrawal.accountName}</p>
+                <p><strong>Bank Name:</strong> ${withdrawal.bankName}</p>
+                <p><strong>Account Number:</strong> ${withdrawal.accountNumber}</p>
+                <p><strong>Amount:</strong> ${withdrawal.withdrawalAmount}</p>
+                <p><strong>Status:</strong> ${withdrawal.status}</p>
+                <p><strong>Timestamp:</strong> ${new Date(withdrawal.timestamp).toLocaleString()}</p>
+                <hr />
+              `;
+
+              // Append to the history container
+              historyContainer.appendChild(withdrawalElement);
+            });
+          } else {
+            historyContainer.innerHTML = "<p>No withdrawal history found.</p>";
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching withdrawal history:", error);
+          alert("An error occurred while fetching your withdrawal history.");
+        });
+    }
+
+    // Check if user is logged in and call viewWithdrawalHistory
+    onAuthStateChanged(auth, (user) => {
+      const historyContainer = document.getElementById("history-container");
+      if (!user) {
+        historyContainer.innerHTML = "<p>You must be logged in to view your withdrawal history.</p>";
+      } else {
+        // User is logged in, fetch and display withdrawal history
+        viewWithdrawalHistory(user);
+      }
+    });
+  </script>
+</head>
+<body>
+  <h1>Your Withdrawal History</h1>
+  <div id="history-container">
+    <!-- Withdrawal history will be dynamically inserted here -->
+  </div>
+</body>
+</html>

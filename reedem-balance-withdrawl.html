@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redeem Balance Withdrawal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container mt-5">
+  <h1>Redeem Balance Withdrawal</h1>
+  
+  <!-- Withdrawal Form -->
+  <form id="withdrawForm">
+    <div class="mb-3">
+      <label for="withdrawAmount" class="form-label">Withdrawal Amount</label>
+      <input type="number" class="form-control" id="withdrawAmount" placeholder="Enter withdrawal amount" required />
+    </div>
+    <div class="mb-3">
+      <label for="bankName" class="form-label">Bank Name</label>
+      <input type="text" class="form-control" id="bankName" placeholder="Enter your bank name" required />
+    </div>
+    <div class="mb-3">
+      <label for="accountNumber" class="form-label">Account Number</label>
+      <input type="number" class="form-control" id="accountNumber" placeholder="Enter your account number" required />
+    </div>
+    <div class="mb-3">
+      <label for="accountName" class="form-label">Account Name</label>
+      <input type="text" class="form-control" id="accountName" placeholder="Enter your account name" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Withdraw</button>
+  </form>
+
+  <!-- Withdrawal History Section -->
+  <h3 class="mt-4">Withdrawal History</h3>
+  <div id="withdrawalHistory" class="mb-3">
+    <ul class="list-group" id="withdrawalList"></ul>
+  </div>
+
+  <!-- Current Redeem Balance -->
+  <h4>Your Redeemed Balance: <span id="redeemedBalance">0.00</span> Naira</h4>
+
+  <div id="result" class="mt-4"></div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+    authDomain: "work-98965.firebaseapp.com",
+    databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+    projectId: "work-98965",
+    storageBucket: "work-98965.appspot.com",
+    messagingSenderId: "755408416828",
+    appId: "1:755408416828:web:59f72561f27fb9ffa01339",
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const userId = "QxSPjkwF8yM7B7GT3E1zAvANeQ13"; // Replace with the actual logged-in user ID
+
+  // Function to update redeemed balance display
+  async function updateRedeemBalance() {
+    try {
+      const userSnapshot = await get(ref(db, `users/${userId}`));
+      if (!userSnapshot.exists()) {
+        throw new Error("User not found.");
+      }
+
+      const userData = userSnapshot.val();
+      const redeemBalance = userData.redeemBalance || 0;
+      document.getElementById("redeemedBalance").innerText = redeemBalance.toFixed(2);
+    } catch (error) {
+      console.error("Error fetching redeemed balance:", error);
+      document.getElementById("result").innerHTML = `
+        <div class="alert alert-danger">${error.message}</div>
+      `;
+    }
+  }
+
+  // Listen for withdrawal form submission
+  document.getElementById("withdrawForm").addEventListener("submit", async function (event) {
+    event.preventDefault(); // Prevent form submission
+
+    const withdrawAmount = parseFloat(document.getElementById("withdrawAmount").value);
+    const bankName = document.getElementById("bankName").value;
+    const accountNumber = document.getElementById("accountNumber").value;
+    const accountName = document.getElementById("accountName").value;
+
+    try {
+      const userSnapshot = await get(ref(db, `users/${userId}`));
+      if (!userSnapshot.exists()) throw new Error("User not found.");
+
+      const userData = userSnapshot.val();
+      const currentBalance = userData.redeemBalance || 0;
+
+      if (withdrawAmount > currentBalance) {
+        throw new Error("Insufficient balance.");
+      }
+
+      // Deduct the amount and update the redeem balance
+      const updatedBalance = currentBalance - withdrawAmount;
+
+      await update(ref(db, `users/${userId}`), { redeemBalance: updatedBalance });
+
+      // Log the withdrawal in redeemWithdrawals node with bank details
+      const withdrawalRef = ref(db, `users/${userId}/redeemWithdrawals`);
+      const newWithdrawalRef = push(withdrawalRef);
+      await update(newWithdrawalRef, {
+        amount: withdrawAmount,
+        bankName: bankName,
+        accountNumber: accountNumber,
+        accountName: accountName,
+        timestamp: Date.now(),
+        status: "Pending", // Initial status
+      });
+
+      // Display success message
+      document.getElementById("result").innerHTML = `
+        <div class="alert alert-success">Withdrawal of ${withdrawAmount.toFixed(2)} Naira is pending!</div>
+      `;
+
+      // Update redeem balance and withdrawal history
+      updateRedeemBalance();
+      updateWithdrawalHistory();
+    } catch (error) {
+      document.getElementById("result").innerHTML = `
+        <div class="alert alert-danger">${error.message}</div>
+      `;
+    }
+  });
+
+  // Function to fetch and display withdrawal history
+  async function updateWithdrawalHistory() {
+    const withdrawalList = document.getElementById("withdrawalList");
+
+    try {
+      const snapshot = await get(ref(db, `users/${userId}/redeemWithdrawals`));
+      withdrawalList.innerHTML = ""; // Clear existing history list
+
+      if (!snapshot.exists()) {
+        withdrawalList.innerHTML = `<li class="list-group-item">No withdrawal history.</li>`;
+        return;
+      }
+
+      const withdrawals = snapshot.val();
+      for (const key in withdrawals) {
+        const withdrawal = withdrawals[key];
+        const listItem = document.createElement("li");
+        listItem.classList.add("list-group-item");
+        listItem.innerHTML = `
+          Amount: ${withdrawal.amount} Naira - Bank: ${withdrawal.bankName} - Account Number: ${withdrawal.accountNumber} - Status: ${withdrawal.status} - Date: ${new Date(
+          withdrawal.timestamp
+        ).toLocaleString()}
+        `;
+        withdrawalList.appendChild(listItem);
+      }
+    } catch (error) {
+      console.error("Error fetching withdrawal history:", error);
+    }
+  }
+
+  // Initialize the redeem balance and withdrawal history on page load
+  updateRedeemBalance();
+  updateWithdrawalHistory();
+</script>
+</body>
+</html>

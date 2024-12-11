@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Withdrawal History - GrowIt</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase(app);
+
+    // Function to load user withdrawal history
+    function loadWithdrawalHistory() {
+      const user = auth.currentUser;
+
+      if (!user) {
+        alert("You must be logged in to view your withdrawal history.");
+        window.location.href = "login.html"; // Redirect to login page if not logged in
+        return;
+      }
+
+      console.log("User is logged in:", user.uid); // Debugging: Check user ID
+
+      const userWithdrawalsRef = ref(db, 'users/' + user.uid + '/withdrawals'); // Reference to the user's withdrawals node in Firebase
+
+      // Fetch the withdrawal data from Firebase
+      get(userWithdrawalsRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const withdrawalsData = snapshot.val();
+            console.log("Fetched Withdrawal Data:", withdrawalsData); // Debugging: Check fetched data
+            const withdrawalsList = document.getElementById("withdrawals-list");
+
+            // Clear the existing list
+            withdrawalsList.innerHTML = '';
+
+            // Loop through each withdrawal
+            Object.keys(withdrawalsData).forEach((withdrawalId) => {
+              const withdrawal = withdrawalsData[withdrawalId];
+
+              // Create list item for each withdrawal
+              const listItem = document.createElement("li");
+              listItem.classList.add("history-item");
+
+              listItem.innerHTML = `
+                <p><strong>Account Name:</strong> ${withdrawal.accountName}</p>
+                <p><strong>Bank Name:</strong> ${withdrawal.bankName}</p>
+                <p><strong>Account Number:</strong> ${withdrawal.accountNumber}</p>
+                <p><strong>Amount:</strong> ₦${withdrawal.withdrawalAmount}</p>
+                <p><strong>Status:</strong> ${withdrawal.status}</p>
+                <hr>
+              `;
+
+              withdrawalsList.appendChild(listItem);
+            });
+          } else {
+            console.log("No withdrawal history available for this user."); // Debugging: No withdrawals found
+            document.getElementById("withdrawals-list").innerHTML = "<p>No withdrawal history found.</p>";
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching withdrawal history:", error);
+          alert("An error occurred while fetching the withdrawal history.");
+        });
+    }
+
+    // Initialize the authentication state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("User is logged in:", user.uid); // Debugging: Confirm logged-in user
+        // If the user is logged in, load their withdrawal history
+        loadWithdrawalHistory();
+      } else {
+        // If the user is not logged in, redirect to the login page
+        alert("You must be logged in to view your withdrawal history.");
+        window.location.href = "login.html"; // Redirect to login page
+      }
+    });
+  </script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+
+    header {
+      background-color: #222;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .history-item {
+      background-color: #f1f1f1;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-item p {
+      margin: 5px 0;
+    }
+
+    hr {
+      margin: 10px 0;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Withdrawal History</h1>
+  </header>
+
+  <main>
+    <h2>Your Withdrawal Requests</h2>
+    <ul id="withdrawals-list">
+      <!-- Withdrawal history will be loaded here -->
+    </ul>
+    <div style="margin-top: 20px;">
+      <a href="withdrawal.html">Go back to withdrawal page</a>
+    </div>
+  </main>
+</body>
+</html>

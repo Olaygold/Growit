@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Page</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .container {
+      margin-top: 50px;
+    }
+    .investment-card {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .investment-card h5 {
+      font-size: 18px;
+    }
+    /* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+h1, h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+h5 {
+  font-size: 18px;
+  color: #34495e;
+}
+
+.container {
+  margin-top: 50px;
+  padding: 20px;
+  max-width: 1200px;
+}
+
+/* Balance Section */
+#currentBalance {
+  background-color: #e9ecef;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+#balance {
+  font-weight: bold;
+  color: #28a745;
+}
+
+/* Investment Plans Section */
+#investmentPlans {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.investment-card {
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  transition: transform 0.2s ease-in-out;
+}
+
+.investment-card:hover {
+  transform: translateY(-5px);
+}
+
+.investment-card h5 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.investment-card button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.investment-card button:hover {
+  background-color: #0056b3;
+}
+
+/* Active Investments Section */
+#activeInvestments {
+  margin-top: 40px;
+}
+
+#activeInvestments .investment-card {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+#activeInvestments h5 {
+  font-size: 20px;
+  color: #28a745;
+}
+
+#activeInvestments p {
+  font-size: 14px;
+  color: #555;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  #investmentPlans {
+    grid-template-columns: 1fr;
+  }
+}
+  </style>
+</head>
+<body>
+    <h3><a href="dashboard.html">return to dashboard</a></h3>
+  <div class="container">
+    <h1>Investment Dashboard</h1>
+
+    <!-- Current Balance Section -->
+    <div id="currentBalance">
+      <h3>Current Balance: ₦<span id="balance">0</span></h3>
+    </div>
+
+    <!-- Investment Plans Section -->
+    <h3>Available Investment Plans</h3>
+    <div id="investmentPlans">
+      <!-- Plans will be dynamically inserted here -->
+    </div>
+
+    <!-- Active Investments Section -->
+    <h3>Active Investment Plans</h3>
+    <div id="activeInvestments">
+      <!-- Active investments will be listed here -->
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    let userId;
+
+    // Firebase Authentication: Listen for user state change
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userId = user.uid; // Store user UID after login
+        fetchUserData(); // Fetch user data once logged in
+      } else {
+        alert("Please log in to view your balance.");
+      }
+    });
+
+    // Define the investment plans
+    const investmentPlans = [
+      { amount: 3000, returnAmount: 5000, duration: 7 },
+      { amount: 5500, returnAmount: 8500, duration: 7 },
+      { amount: 10000, returnAmount: 15000, duration: 7 },
+      { amount: 15000, returnAmount: 22500, duration: 7 },
+      { amount: 20000, returnAmount: 30000, duration: 7 },
+      { amount: 25000, returnAmount: 37500, duration: 7 },
+      { amount: 30000, returnAmount: 45000, duration: 7 },
+      { amount: 35000, returnAmount: 52500, duration: 7 },
+      { amount: 40000, returnAmount: 60000, duration: 7 },
+      { amount: 45000, returnAmount: 67500, duration: 7 },
+      { amount: 50000, returnAmount: 75000, duration: 7 },
+      { amount: 55000, returnAmount: 82500, duration: 7 },
+      { amount: 60000, returnAmount: 90000, duration: 7 },
+      { amount: 65000, returnAmount: 97500, duration: 7 },
+      { amount: 70000, returnAmount: 105000, duration: 7 },
+      { amount: 75000, returnAmount: 112500, duration: 7 },
+      { amount: 80000, returnAmount: 120000, duration: 7 },
+      { amount: 85000, returnAmount: 127500, duration: 7 },
+      { amount: 90000, returnAmount: 135000, duration: 7 }
+    ];
+
+    // Fetch user data
+    function fetchUserData() {
+      get(ref(db, `users/${userId}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const user = snapshot.val();
+
+            // Update the user's balance
+            if (user.balance !== undefined) {
+              document.getElementById("balance").textContent = user.balance;
+            } else {
+              console.error("Balance not found for user:", userId);
+              document.getElementById("balance").textContent = 0;
+            }
+
+            // Display active investments
+            displayActiveInvestments(user.activeInvestments);
+          } else {
+            console.error("No data found for user:", userId);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    }
+
+    // Function to display investment plans
+    function displayInvestmentPlans() {
+      const investmentPlansDiv = document.getElementById("investmentPlans");
+      investmentPlans.forEach((plan) => {
+        const investmentCard = document.createElement("div");
+        investmentCard.classList.add("investment-card");
+        investmentCard.innerHTML = `
+          <h5>Invest ₦${plan.amount} to get ₦${plan.returnAmount} in ${plan.duration} days</h5>
+          <button class="btn btn-primary invest-btn" data-amount="${plan.amount}" data-return="${plan.returnAmount}" data-duration="${plan.duration}">Invest Now</button>
+        `;
+        investmentPlansDiv.appendChild(investmentCard);
+      });
+
+      // Add event listeners for investment buttons
+      document.querySelectorAll(".invest-btn").forEach((button) => {
+        button.addEventListener("click", (e) => {
+          const amount = parseInt(e.target.getAttribute("data-amount"));
+          const returnAmount = parseInt(e.target.getAttribute("data-return"));
+          const duration = parseInt(e.target.getAttribute("data-duration"));
+          investInPlan(amount, returnAmount, duration);
+        });
+      });
+    }
+
+    // Function to handle investment
+    function investInPlan(amount, returnAmount, duration) {
+      get(ref(db, `users/${userId}`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const user = snapshot.val();
+            if (user.balance >= amount) {
+              const newBalance = user.balance - amount;
+              const investmentEndDate = Date.now() + duration * 24 * 60 * 60 * 1000; // End date after duration
+
+              // Deduct from balance and save investment details
+              const newInvestmentId = Date.now(); // Unique investment ID
+              const investmentData = {
+                amount,
+                returnAmount,
+                duration,
+                startDate: Date.now(),
+                endDate: investmentEndDate,
+                status: "Active"
+              };
+
+              // Update balance and investments
+              update(ref(db, `users/${userId}`), {
+                balance: newBalance,
+                [`activeInvestments/${newInvestmentId}`]: investmentData
+              }).then(() => {
+                alert("Investment successful!");
+                fetchUserData(); // Refresh user data
+              }).catch(console.error);
+            } else {
+              alert("Insufficient balance for this investment.");
+            }
+          }
+        })
+        .catch(console.error);
+    }
+
+    // Function to display active investments
+    function displayActiveInvestments(activeInvestments) {
+      const activeInvestmentsDiv = document.getElementById("activeInvestments");
+      activeInvestmentsDiv.innerHTML = ''; // Clear previous investments
+      if (activeInvestments) {
+        for (const investmentId in activeInvestments) {
+          const investment = activeInvestments[investmentId];
+          const investmentCard = document.createElement("div");
+          investmentCard.classList.add("investment-card");
+          investmentCard.innerHTML = `
+            <h5>Invested ₦${investment.amount} to get ₦${investment.returnAmount}</h5>
+            <p><strong>Start Date:</strong> ${new Date(investment.startDate).toLocaleDateString()}</p>
+            <p><strong>End Date:</strong> ${new Date(investment.endDate).toLocaleDateString()}</p>
+            <p><strong>Status:</strong> ${investment.status}</p>
+          `;
+          activeInvestmentsDiv.appendChild(investmentCard);
+
+          // Check if investment period has ended and update balance
+          if (investment.status === "Active" && Date.now() >= investment.endDate) {
+            const userBalance = parseInt(document.getElementById("balance").textContent);
+            const newBalance = userBalance + investment.returnAmount;
+
+            // Update balance after investment period
+            update(ref(db, `users/${userId}`), {
+              balance: newBalance,
+              [`activeInvestments/${investmentId}/status`]: "Completed"
+            }).then(() => {
+              fetchUserData(); // Refresh user data after update
+            }).catch(console.error);
+          }
+        }
+      } else {
+        activeInvestmentsDiv.innerHTML = "<p>No active investments.</p>";
+      }
+    }
+
+    // Initialize the page
+    displayInvestmentPlans();
+  </script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Refund Request</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .container {
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>User Refund Request</h1>
+    <p class="text-muted">Refund requests are subject to review. A service fee of <strong>₦500</strong> or a percentage may apply.</p>
+
+    <!-- Refund Request Form -->
+    <div id="refundFormSection">
+      <h3>Submit Refund Request</h3>
+      <form id="refundForm">
+        <div class="mb-3">
+          <label for="refundReason" class="form-label">Reason for Refund:</label>
+          <textarea class="form-control" id="refundReason" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </form>
+    </div>
+
+    <!-- Refund Status -->
+    <div id="refundStatusSection" style="display: none;">
+      <h3>Refund Status</h3>
+      <div id="refundStatusMessage" class="alert" role="alert"></div>
+
+      <!-- Bank Details Form (If Approved) -->
+      <div id="bankDetailsForm" style="display: none;">
+        <h4>Provide Bank Details</h4>
+        <form id="bankDetailsFormSection">
+          <div class="mb-3">
+            <label for="bankName" class="form-label">Bank Name</label>
+            <input type="text" class="form-control" id="bankName" required />
+          </div>
+          <div class="mb-3">
+            <label for="accountName" class="form-label">Account Name</label>
+            <input type="text" class="form-control" id="accountName" required />
+          </div>
+          <div class="mb-3">
+            <label for="accountNumber" class="form-label">Account Number</label>
+            <input type="text" class="form-control" id="accountNumber" required />
+          </div>
+          <button type="submit" class="btn btn-success">Submit Bank Details</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Not Legit Message -->
+    <div id="notLegitMessage" class="alert alert-danger" style="display: none;" role="alert">
+      You are not considered legitimate. The admin has declined your request.
+    </div>
+
+    <!-- Withdrawal Eligibility Message -->
+    <div id="withdrawalEligibilityMessage" class="alert alert-danger" style="display: none;" role="alert">
+      You are not eligible for a refund as you have records of withdrawal.
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const userId = "user123"; // Replace with dynamic user ID based on user session/authentication
+
+    // Check if the user has any withdrawal records
+    function checkWithdrawalEligibility() {
+      get(ref(db, `users/${userId}/withdrawals`))
+        .then((snapshot) => {
+          if (snapshot.exists() && Object.keys(snapshot.val()).length > 0) {
+            // Show withdrawal eligibility message if records exist
+            document.getElementById("withdrawalEligibilityMessage").style.display = "block";
+            document.getElementById("refundFormSection").style.display = "none"; // Hide the refund form
+          } else {
+            document.getElementById("withdrawalEligibilityMessage").style.display = "none";
+            document.getElementById("refundFormSection").style.display = "block"; // Show the refund form if eligible
+          }
+        })
+        .catch(console.error);
+    }
+
+    // Submit Refund Request
+    document.getElementById("refundForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const reason = document.getElementById("refundReason").value;
+
+      // Generate unique refund ID
+      const refundId = Date.now();
+
+      // Save refund request under the user's node in Firebase
+      set(ref(db, `users/${userId}/refundRequests/${refundId}`), {
+        reason,
+        status: "Pending",
+        timestamp: Date.now(),
+      })
+        .then(() => {
+          alert("Refund request submitted successfully!");
+          checkRefundStatus(); // Check status after submitting
+        })
+        .catch(console.error);
+    });
+
+    // Check Refund Status
+    function checkRefundStatus() {
+      get(ref(db, `users/${userId}/refundRequests`))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const requests = snapshot.val();
+            document.getElementById("refundFormSection").style.display = "none";
+            document.getElementById("refundStatusSection").style.display = "block";
+
+            const statusMessage = document.getElementById("refundStatusMessage");
+            for (const refundId in requests) {
+              const data = requests[refundId];
+              statusMessage.textContent =
+                data.status === "Pending"
+                  ? "Your request is under review."
+                  : data.status === "Approved"
+                  ? "Your request has been approved. Please provide your bank details."
+                  : `Declined: ${data.adminMessage}`;
+              statusMessage.className = `alert alert-${
+                data.status === "Pending"
+                  ? "info"
+                  : data.status === "Approved"
+                  ? "success"
+                  : "danger"
+              }`;
+
+              if (data.status === "Approved") {
+                document.getElementById("bankDetailsForm").style.display = "block";
+              }
+
+              if (data.status === "Declined") {
+                document.getElementById("notLegitMessage").style.display = "block";
+              }
+            }
+          }
+        })
+        .catch(console.error);
+    }
+
+    // Submit Bank Details
+    document.getElementById("bankDetailsFormSection").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const bankDetails = {
+        bankName: document.getElementById("bankName").value,
+        accountName: document.getElementById("accountName").value,
+        accountNumber: document.getElementById("accountNumber").value,
+      };
+
+      // Save the bank details to both locations:
+      const adminBankDetailsRef = ref(db, `adminBankDetails/${userId}`);
+      set(adminBankDetailsRef, bankDetails)
+        .then(() => {
+          const refundId = "refundId12345"; // Replace with dynamic refund ID
+          const refundRequestRef = ref(db, `users/${userId}/refundRequests/${refundId}`);
+          update(refundRequestRef, {
+            bankDetails: bankDetails,
+            status: "Bank Details Submitted",  // Update status
+          })
+            .then(() => {
+              alert("Bank details submitted successfully!");
+            })
+            .catch(console.error);
+        })
+        .catch(console.error);
+    });
+
+    checkWithdrawalEligibility(); // Check withdrawal eligibility on page load
+    checkRefundStatus(); // Check refund status on page load
+  </script>
+</body>
+</html>

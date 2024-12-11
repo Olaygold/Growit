@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deposit</title>
+  <link rel="stylesheet" href="deposit.css">
+</head>
+<body>
+  <h1>Deposit Funds</h1>
+  <p>Current Balance: <span id="current-balance">0</span> Naira</p>
+
+  <form id="deposit-form">
+    <label for="amount">Amount (min 100 Naira):</label>
+    <input type="number" id="amount" min="100" required>
+    <button type="submit">Deposit</button>
+  </form>
+
+  <script type="module" src="deposit.js"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script> <!-- Paystack Script -->
+  <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+  authDomain: "work-98965.firebaseapp.com",
+  databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+  projectId: "work-98965",
+  storageBucket: "work-98965.appspot.com",
+  messagingSenderId: "755408416828",
+  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Function to accumulate and store total deposit for each user
+function accumulateAndStoreTotalDeposits() {
+  get(ref(db, "deposits")).then((snapshot) => {
+    if (snapshot.exists()) {
+      const deposits = snapshot.val();
+
+      // Iterate over each user and accumulate total deposit
+      for (const userId in deposits) {
+        let totalDeposit = 0;
+
+        // Iterate over each deposit of the user
+        for (const depositId in deposits[userId]) {
+          totalDeposit += deposits[userId][depositId].amount || 0;
+        }
+
+        // Store the total deposit for the user
+        const totalDepositsRef = ref(db, `users/${userId}/totalDeposits`);
+        set(totalDepositsRef, totalDeposit)
+          .then(() => {
+            console.log(`Total deposit for user ${userId} updated successfully!`);
+          })
+          .catch(console.error);
+      }
+    } else {
+      console.log("No deposits found.");
+    }
+  }).catch(console.error);
+}
+
+// Call function to accumulate and store total deposits
+accumulateAndStoreTotalDeposits();
+  </script>
+  <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+  authDomain: "work-98965.firebaseapp.com",
+  databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+  projectId: "work-98965",
+  storageBucket: "work-98965.appspot.com",
+  messagingSenderId: "755408416828",
+  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Function to update total deposit for a user
+async function updateTotalDeposit(userId, depositAmount) {
+  try {
+    const userDepositRef = ref(db, `users/${userId}/totalDeposits`);
+
+    // Get the current total deposit amount
+    const snapshot = await get(userDepositRef);
+    let currentTotalDeposit = snapshot.exists() ? snapshot.val() : 0;
+    currentTotalDeposit += depositAmount;
+
+    // Update the total deposit in the database
+    await update(userDepositRef, {
+      totalDeposits: currentTotalDeposit
+    });
+    console.log("Total deposit updated successfully!");
+  } catch (error) {
+    console.error("Error updating total deposit:", error);
+  }
+}
+
+// Example usage
+const userId = "user123"; // Replace with actual user ID
+const depositAmount = 500; // The deposit amount made by the user
+
+updateTotalDeposit(userId, depositAmount);
+  </script>
+</body>
+</html>

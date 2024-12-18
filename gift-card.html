@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redeem Gift Card</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container mt-5">
+  <h1>Redeem Gift Card</h1>
+  <form id="redeemForm">
+    <div class="mb-3">
+      <label for="giftCode" class="form-label">Gift Card Code</label>
+      <input type="text" class="form-control" id="giftCode" placeholder="Enter your code" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Redeem</button>
+  </form>
+
+  <!-- Redemption History Section -->
+  <h3 class="mt-4">Gift Card Redemption History</h3>
+  <div id="redemptionHistory" class="mb-3">
+    <ul class="list-group" id="historyList"></ul>
+  </div>
+
+  <!-- Redeemed Balance -->
+  <h4>Your Redeemed Balance: <span id="redeemedBalance">0.00</span> Naira</h4>
+
+  <div id="result" class="mt-4"></div>
+  <div>
+    Do you want to withdraw your bonus?
+    <a href="reedem-balance-withdrwal.html" id="myLink" class="disabled-link">Click here!</a>
+  </div>
+  <style>
+    .disabled-link {
+      pointer-events: none;
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+    authDomain: "work-98965.firebaseapp.com",
+    databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+    projectId: "work-98965",
+    storageBucket: "work-98965.appspot.com",
+    messagingSenderId: "755408416828",
+    appId: "1:755408416828:web:59f72561f27fb9ffa01339",
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  let userId = null;
+
+  // Check if user is authenticated
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userId = user.uid; // Set the logged-in user's ID
+      updateRedemptionHistory();
+    } else {
+      window.location.href = "login.html"; // Redirect to login if not authenticated
+    }
+  });
+
+  // Redeem Gift Card
+  document.getElementById("redeemForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const giftCode = document.getElementById("giftCode").value;
+
+    try {
+      // Fetch gift card details
+      const giftCardSnapshot = await get(ref(db, `giftCards/${giftCode}`));
+      if (!giftCardSnapshot.exists()) throw new Error("Invalid gift card code.");
+
+      const giftCardData = giftCardSnapshot.val();
+
+      // Check if already redeemed or expired
+      if (giftCardData.redeemed) throw new Error("Gift card already redeemed.");
+      if (Date.now() > giftCardData.expiry) throw new Error("Gift card has expired.");
+
+      const redeemedAmount = giftCardData.value;
+
+      // Update user's redemption history
+      const redemptionRef = ref(db, `users/${userId}/redemptions`);
+      const newRedemptionRef = push(redemptionRef);
+      await update(newRedemptionRef, {
+        amount: redeemedAmount,
+        giftCardCode: giftCode,
+        timestamp: Date.now(),
+        status: "Success",
+      });
+
+      // Mark gift card as redeemed
+      await update(ref(db, `giftCards/${giftCode}`), { redeemed: true });
+
+      // Update user's redeem balance
+      const userSnapshot = await get(ref(db, `users/${userId}`));
+      const userData = userSnapshot.val();
+      const updatedBalance = (userData.redeemBalance || 0) + redeemedAmount;
+
+      await update(ref(db, `users/${userId}`), { redeemBalance: updatedBalance });
+
+      // Show success message
+      document.getElementById("result").innerHTML = `
+        <div class="alert alert-success">You have successfully redeemed ${redeemedAmount} Naira!</div>
+      `;
+      updateRedemptionHistory();
+    } catch (error) {
+      document.getElementById("result").innerHTML = `
+        <div class="alert alert-danger">${error.message}</div>
+      `;
+    }
+  });
+
+  // Update Redemption History
+  async function updateRedemptionHistory() {
+    const historyList = document.getElementById("historyList");
+    try {
+      const snapshot = await get(ref(db, `users/${userId}/redemptions`));
+      historyList.innerHTML = "";
+
+      if (!snapshot.exists()) {
+        historyList.innerHTML = `<li class="list-group-item">No redemption history.</li>`;
+        return;
+      }
+
+      let totalRedeemed = 0;
+      const redemptions = snapshot.val();
+
+      for (const key in redemptions) {
+        const redemption = redemptions[key];
+        const listItem = document.createElement("li");
+        listItem.classList.add("list-group-item");
+        listItem.innerText = `Amount: ${redemption.amount} Naira - Redeemed using ${redemption.giftCardCode} on ${new Date(redemption.timestamp).toLocaleString()}`;
+        historyList.appendChild(listItem);
+        totalRedeemed += redemption.amount;
+      }
+
+      document.getElementById("redeemedBalance").innerText = totalRedeemed.toFixed(2);
+
+      if (totalRedeemed > 0) {
+        document.getElementById("myLink").classList.remove("disabled-link");
+      }
+    } catch (error) {
+      console.error("Error fetching redemption history:", error);
+    }
+  }
+</script>
+</body>
+</html>

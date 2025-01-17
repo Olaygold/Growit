@@ -10,7 +10,7 @@ const firebaseConfig = {
   projectId: "work-98965",
   storageBucket: "work-98965.appspot.com",
   messagingSenderId: "755408416828",
-  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+  appId: "1:755408416828:web:59f72561f27fb9ffa01339",
 };
 
 // Initialize Firebase
@@ -18,107 +18,99 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getDatabase();
 
+// Extract referral code from URL
+const referralCode = new URLSearchParams(window.location.search).get("ref");
+
 // Function to register a new user
-function registerUser() {
-  const name = document.getElementById('register-name').value;
-  const email = document.getElementById('register-email').value;
-  const password = document.getElementById('register-password').value;
-  const phone = document.getElementById('register-phone').value;
+async function registerUser() {
+  const name = document.getElementById("register-name").value;
+  const email = document.getElementById("register-email").value;
+  const password = document.getElementById("register-password").value;
+  const phone = document.getElementById("register-phone").value;
 
   if (!name || !email || !password || !phone) {
     alert("Please fill in all the fields.");
     return;
   }
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userId = userCredential.user.uid;
 
-      // Save user data to Firebase Database
-      set(ref(db, 'users/' + user.uid), {
-        name: name,
-        email: email,
-        phone: phone,
-        balance: 500, // Welcome bonus
-        lastLogin: new Date().toISOString()
-      }).then(() => {
-        alert("Registration successful! Welcome bonus of 500 Naira has been added.");
-        window.location = 'dashboard.html'; // Redirect to the dashboard
-      }).catch(error => {
-        console.error("Error saving user data:", error);
-        alert("Failed to save user data. Please try again.");
-      });
-    })
-    .catch(error => {
-      console.error("Error during registration:", error);
-      alert(error.message);
+    // Save user data to Firebase Database
+    await set(ref(db, `users/${userId}`), {
+      name,
+      email,
+      phone,
+      referredBy: referralCode || null, // Save referral code if provided
+      balance: 500, // Welcome bonus
+      commission: 0,
+      depositProcessed: false,
+      lastLogin: new Date().toISOString(),
     });
+
+    alert("Registration successful! Welcome bonus of 500 Naira has been added.");
+    window.location.href = "dashboard.html"; // Redirect to the dashboard
+  } catch (error) {
+    console.error("Error registering user:", error);
+    alert(error.message);
+  }
 }
 
 // Function to log in a user
-function loginUser() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
+async function loginUser() {
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
   if (!email || !password) {
     alert("Please fill in both email and password.");
     return;
   }
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userId = userCredential.user.uid;
 
-      // Update last login time in the database
-      update(ref(db, 'users/' + user.uid), {
-        lastLogin: new Date().toISOString()
-      }).then(() => {
-        alert("Login successful!");
-        window.location = 'dashboard.html'; // Redirect to the dashboard
-      }).catch(error => {
-        console.error("Error updating last login:", error);
-        alert("Failed to update last login. Please try again.");
-      });
-    })
-    .catch(error => {
-      console.error("Error during login:", error);
-      alert(error.message);
+    // Update last login time in the database
+    await update(ref(db, `users/${userId}`), {
+      lastLogin: new Date().toISOString(),
     });
+
+    alert("Login successful!");
+    window.location.href = "dashboard.html"; // Redirect to the dashboard
+  } catch (error) {
+    console.error("Error during login:", error);
+    alert(error.message);
+  }
+}
+
+// Function to process referral rewards
+async function processReferralReward(snapshot, context) {
+  const depositData = snapshot.val();
+  const userId = context.params.userId; // User who made the deposit
+  const depositAmount = depositData.amount; // Deposit amount
+
+  try {
+    // Fetch user details
+    const userSnapshot = await admin.database().ref(`/users/${userId}`).once("value");
+    const user = userSnapshot.val();
+
+    if (user && user.referredBy) {
+      const referrerId = user.referredBy; // Get the referrer ID
+      const rewardAmount = depositAmount * 0.10; // 10% reward
+
+      // Update referrer's balance
+      await admin.database().ref(`/users/${referrerId}/balance`).transaction((currentBalance) => {
+        return (currentBalance || 0) + rewardAmount;
+      });
+
+      console.log(`Referrer ${referrerId} has received a reward of ${rewardAmount}`);
+    }
+  } catch (error) {
+    console.error("Error processing referral reward:", error);
+  }
 }
 
 // Expose functions to the global scope
 window.registerUser = registerUser;
 window.loginUser = loginUser;
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-
-admin.initializeApp();
-
-// Trigger when a deposit is made
-exports.processReferralReward = functions.database.ref('/deposits/{userId}/{depositId}')
-  .onCreate(async (snapshot, context) => {
-    const depositData = snapshot.val();
-    const userId = context.params.userId; // The user who made the deposit
-    const depositAmount = depositData.amount; // The amount of the deposit
-
-    try {
-      // Get the user's details from the database
-      const userSnapshot = await admin.database().ref(`/users/${userId}`).once('value');
-      const user = userSnapshot.val();
-
-      if (user && user.referrerId) {
-        // Get the referrerId and calculate 10% of the deposit
-        const referrerId = user.referrerId;
-        const rewardAmount = depositAmount * 0.10; // 10% reward
-
-        // Update the referrer's balance with the 10% reward
-        await admin.database().ref(`/users/${referrerId}/balance`).transaction((currentBalance) => {
-          return (currentBalance || 0) + rewardAmount; // Add 10% to the referrer's balance
-        });
-
-        console.log(`Referrer ${referrerId} has received a reward of ${rewardAmount}`);
-      }
-    } catch (error) {
-      console.error("Error processing referral reward: ", error);
-    }
-  });

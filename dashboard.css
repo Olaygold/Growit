@@ -3,52 +3,74 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f9;
-  color: #333;
+  background-color: #1e1e2f; /* Dark purple background */
+  color: #eaeaea;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
+/* Header */
 header {
   text-align: center;
-  background: #4caf50;
+  background: linear-gradient(145deg, #7e57c2, #5e35b1); /* Purple gradient */
   color: white;
   padding: 20px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 26px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
+/* Main Content */
 main {
+  flex: 1;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
 h2 {
-  color: #4caf50;
+  color: #a970ff; /* Bright purple */
+  font-size: 22px;
+  margin-bottom: 10px;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 p {
   font-size: 16px;
   margin: 10px 0;
+  text-align: center;
+  color: #c7c7dd; /* Soft white */
 }
 
 /* How It Works Section */
 #how-it-works {
-  margin-top: 20px;
-  background: #fff;
-  padding: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  width: 100%;
+  max-width: 800px;
+  background: linear-gradient(145deg, #2b2b42, #3c3c54); /* Dark gradient */
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  color: #eaeaea;
 }
 
 #how-it-works ul {
   list-style: disc inside;
   padding-left: 20px;
+  color: #eaeaea;
 }
 
 /* Features Section */
 #features {
-  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
 }
 
 .feature-grid {
@@ -59,57 +81,44 @@ p {
 
 .feature-item {
   text-align: center;
-  background: white;
+  background: linear-gradient(145deg, #3e3e5a, #2e2e47); /* Dark gradient */
   padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
 }
 
 .feature-item i {
   font-size: 30px;
-  color: #4caf50;
+  color: #a970ff; /* Bright purple */
   margin-bottom: 10px;
 }
 
 .feature-item a {
   text-decoration: none;
   font-size: 16px;
-  color: #333;
+  color: #eaeaea;
   display: block;
   margin-top: 5px;
 }
 
 .feature-item a:hover {
-  color: #4caf50;
+  color: #ffb74d; /* Gold */
 }
 
 /* Footer */
 footer {
-  background: #4caf50;
+  background: linear-gradient(145deg, #7e57c2, #5e35b1); /* Purple gradient */
   color: white;
   padding: 10px 0;
   text-align: center;
-}
-
-footer a {
-  text-decoration: none;
-  color: white;
-  margin: 0 10px;
-}
-
-footer a:hover {
-  text-decoration: underline;
-}
-/* Footer - Fixed Navigation Bar */
-footer {
-  position: fixed;
-  bottom: 0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
   width: 100%;
-  background: #4caf50;
-  color: white;
-  padding: 10px 0;
-  text-align: center;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.1);
 }
 
 footer a {
@@ -122,3 +131,81 @@ footer a {
 footer a:hover {
   text-decoration: underline;
 }
+
+/* User Information Section */
+#user-info {
+  width: 100%;
+  max-width: 800px;
+  background: linear-gradient(145deg, #3e3e5a, #2e2e47); /* Dark gradient */
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+#user-info h2 {
+  font-size: 22px;
+  color: #a970ff; /* Bright purple */
+  margin-bottom: 10px;
+}
+
+#user-info p {
+  font-size: 18px;
+  color: #eaeaea;
+}
+
+#user-info span {
+  font-weight: bold;
+  color: #ffb74d; /* Gold */
+}
+
+/* Frame for User Balance */
+#user-info .balance-frame {
+  margin-top: 15px;
+  padding: 10px;
+  border: 2px solid #a970ff; /* Bright purple */
+  border-radius: 8px;
+  background: linear-gradient(145deg, #2b2b42, #3c3c54); /* Dark gradient */
+  display: inline-block;
+  color: #ffb74d; /* Gold */
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+
+/* Footer - Fixed Navigation Bar */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(145deg, #7e57c2, #5e35b1); /* Purple gradient */
+  color: white;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3);
+  z-index: 1000; /* Ensures it stays on top */
+}
+
+footer a {
+  text-decoration: none;
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+footer a i {
+  font-size: 20px; /* Icon size */
+}
+
+footer a:hover {
+  color: #ffb74d; /* Gold color on hover */
+  transform: scale(1.1); /* Slight zoom effect */
+  }

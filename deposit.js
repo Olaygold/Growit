@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, update, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, update, get, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -88,8 +88,12 @@ function updateBalance(amount) {
         const userData = snapshot.val();
         const newBalance = (userData.balance || 0) + amount;
 
+        // Check if the user has a referral code and if it's their first deposit
+        const referralCode = userData.referralCode;
+        const isFirstDeposit = !userData.firstDeposit; // Check if it's the first deposit
+
         // Update user balance
-        update(userRef, { balance: newBalance })
+        update(userRef, { balance: newBalance, firstDeposit: true })
           .then(() => {
             // Save deposit details to the "deposits" node
             const depositData = {
@@ -103,6 +107,51 @@ function updateBalance(amount) {
               .then(() => {
                 alert(`Deposit of ${amount} Naira successful!`);
                 fetchBalance(); // Refresh balance
+
+                // Check if referral code exists and if it's the first deposit
+                if (referralCode && isFirstDeposit) {
+                  // Calculate 20% commission for the referrer
+                  const commissionAmount = amount * 0.20;
+
+                  // Fetch referrer's data using the referral code
+                  get(ref(db, `users/${referralCode}`))
+                    .then((referralSnapshot) => {
+                      if (referralSnapshot.exists()) {
+                        const referrerData = referralSnapshot.val();
+                        const referrerId = referralSnapshot.key;
+
+                        // Update referrer's balance with the commission
+                        const newReferrerBalance = (referrerData.balance || 0) + commissionAmount;
+
+                        update(ref(db, `users/${referrerId}`), { balance: newReferrerBalance })
+                          .then(() => {
+                            // Log commission for the referrer
+                            const referralData = {
+                              email: currentUser.email,
+                              commission: commissionAmount,
+                            };
+
+                            // Save referral data to the "referrals" node
+                            const referralId = new Date().getTime(); // Unique referral ID (timestamp)
+                            set(ref(db, `referrals/${referrerId}/${referralId}`), referralData)
+                              .then(() => {
+                                console.log(`Commission of ${commissionAmount} Naira awarded to referrer.`);
+                              })
+                              .catch((error) => {
+                                console.error("Error saving referral data:", error);
+                              });
+                          })
+                          .catch((error) => {
+                            console.error("Error updating referrer's balance:", error);
+                          });
+                      } else {
+                        console.error("Referrer not found.");
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("Error fetching referrer's data:", error);
+                    });
+                }
               })
               .catch((error) => {
                 console.error("Error saving deposit information:", error);
@@ -118,4 +167,4 @@ function updateBalance(amount) {
     .catch((error) => {
       console.error("Error fetching user data:", error);
     });
-}
+                    }

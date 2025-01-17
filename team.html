@@ -117,21 +117,20 @@
         // Load referral data
         fetchReferralData(userId);
 
-        // Generate referral code
-        generateCodeBtn.addEventListener("click", async () => {
-          const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-          await set(ref(db, `users/${userId}/referralCode`), referralCode);
-          referralCodeElement.textContent = referralCode;
-          referralLinkElement.textContent = `Referral Link: https://yourwebsite.com/register?ref=${referralCode}`;
-        });
-      } else {
-        console.error("No user logged in.");
-        window.location.href = "/login.html";
-      }
-    });
+        // Generate referral code and link dynamically
+generateCodeBtn.addEventListener("click", async () => {
+  const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+  await set(ref(db, `users/${userId}/referralCode`), referralCode);
 
-    async function fetchReferralData(userId) {
-      try {
+  // Get the current domain name from the browser
+  const currentDomain = window.location.origin;
+
+  // Generate the referral link dynamically
+  const referralLink = `${currentDomain}/register?ref=${referralCode}`;
+
+  referralCodeElement.textContent = referralCode;
+  referralLinkElement.textContent = `Referral Link: ${referralLink}`;
+});
         // Fetch referral code
         const userRef = ref(db, `users/${userId}/referralCode`);
         const userSnap = await get(userRef);

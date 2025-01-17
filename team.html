@@ -119,15 +119,17 @@
 
         // Generate referral code and link dynamically
         generateCodeBtn.addEventListener("click", async () => {
-          try {
-            const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-            await set(ref(db, `users/${userId}/referralCode`), referralCode);
+  const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+  await set(ref(db, `users/${userId}/referralCode`), referralCode);
 
-            const currentDomain = window.location.origin;
-            const referralLink = `${currentDomain}/register?ref=${referralCode}`;
+  // Get the current domain name from the browser
+  const currentDomain = window.location.origin;
 
-            referralCodeElement.textContent = referralCode;
-            referralLinkElement.textContent = `Referral Link: ${referralLink}`;
+  // Generate the referral link pointing to index.html
+  const referralLink = `${currentDomain}/index.html?ref=${referralCode}`;
+
+  referralCodeElement.textContent = referralCode;
+  referralLinkElement.textContent = `Referral Link: ${referralLink}`;
           } catch (error) {
             console.error("Error generating referral code:", error);
           }

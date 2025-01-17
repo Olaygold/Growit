@@ -29,6 +29,10 @@
       <input type="email" id="register-email" placeholder="Enter your email">
       <input type="password" id="register-password" placeholder="Enter your password">
       <input type="tel" id="register-phone" placeholder="Enter your phone number">
+      
+      <!-- Hidden field for referral code -->
+      <input type="text" id="register-referral" placeholder="Referral Code" readonly style="background-color: #e9ecef;">
+
       <button onclick="registerUser()">Register</button>
     </div>
 
@@ -74,6 +78,46 @@
         toggleIcon.classList.add('fa-eye');
       }
     }
+
+    // Function to extract referral code from URL
+    function getReferralCode() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('ref') || '';
+    }
+
+    // Prefill referral code on page load
+    window.onload = () => {
+      const referralCodeInput = document.getElementById('register-referral');
+      const referralCode = getReferralCode();
+      referralCodeInput.value = referralCode;
+    };
+
+    // Function to handle user registration
+    async function registerUser() {
+      const name = document.getElementById('register-name').value;
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+      const phone = document.getElementById('register-phone').value;
+      const referralCode = document.getElementById('register-referral').value;
+
+      if (!name || !email || !password || !phone) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+
+      // Simulate registration process
+      try {
+        console.log('Registering user with details:');
+        console.log({ name, email, password, phone, referralCode });
+
+        // Simulate successful registration
+        alert('Registration successful!');
+        window.location.href = '/dashboard.html'; // Redirect to dashboard
+      } catch (error) {
+        console.error('Error during registration:', error);
+        alert('An error occurred during registration. Please try again.');
+      }
+    }
   </script>
 </body>
-        </html>
+</html>

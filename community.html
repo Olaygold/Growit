@@ -6,19 +6,87 @@
   <title>Join Our Community Telegram Channel</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    .cta-button {
-      background-color: #0088cc;
+    body {
+      background: linear-gradient(45deg, #6a1b9a, #9c27b0);
       color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
+      font-family: Arial, sans-serif;
+    }
+
+    .cta-button {
+      background-color: #8e24aa;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background-color: #6a1b9a;
+      transform: scale(1.1);
+    }
+
+    .cta-button:active {
+      transform: scale(0.95);
+    }
+
+    .content-section {
+      margin-top: 30px;
+      animation: fadeIn 1.5s ease-in-out;
+    }
+
+    h1, h2 {
+      animation: slideIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(0); }
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    ul li {
+      margin: 10px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .alert {
+      background-color: #d32f2f;
+      color: white;
+      font-weight: bold;
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      color: #d1c4e9;
+    }
+
+    .footer a {
+      color: #bb86fc;
       text-decoration: none;
       font-weight: bold;
     }
-    .cta-button:hover {
-      background-color: #006699;
-    }
-    .content-section {
-      margin-top: 30px;
+
+    .footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -52,9 +120,9 @@
       </div>
     </div>
   </div>
-  <br>
-  <div>
-      Also for any reason you can chat the customer service <a href="customer-service.html">click here!</a>
+  
+  <div class="footer">
+    <p>Also, for any reason, you can chat with customer service <a href="customer-service.html">click here!</a></p>
   </div>
 </body>
 </html>

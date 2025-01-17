@@ -3,74 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Site Under Maintenance</title>
+  <meta name="description" content="GrowIt: Empowering Agriculture Investment">
+  <meta name="keywords" content="growit agricultural investment platform">
+  <meta name="author" content="growit agricultural investment">
+  <title>GrowIt - Investment Process</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #1a1a1a;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      overflow: hidden;
-    }
+    /* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(145deg, #2b2b42, #3e3e5a);
+  color: #e0e0e0;
+}
 
-    .container {
-      text-align: center;
-      animation: fadeIn 1.5s ease-out;
-    }
+header {
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
+  color: white;
+  text-align: center;
+  padding: 20px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease-in-out;
+}
 
-    h1 {
-      font-size: 3rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 4px;
-      color: #ff6347;
-      animation: textAnimation 3s ease-out infinite alternate;
-    }
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
 
-    p {
-      font-size: 1.5rem;
-      color: #ddd;
-      margin-top: 20px;
-      animation: textAnimation 4s ease-out infinite alternate;
-    }
+/* Main Section */
+main {
+  padding: 20px;
+  animation: slideIn 1s ease-in-out;
+}
 
-    @keyframes fadeIn {
-      0% {
-        opacity: 0;
-        transform: translateY(50px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+.investment-process {
+  margin-top: 20px;
+}
 
-    @keyframes textAnimation {
-      0% {
-        text-shadow: 0 0 10px #ff6347, 0 0 20px #ff6347, 0 0 30px #ff6347;
-        transform: scale(1);
-      }
-      50% {
-        text-shadow: 0 0 30px #ff6347, 0 0 60px #ff6347, 0 0 90px #ff6347;
-        transform: scale(1.1);
-      }
-      100% {
-        text-shadow: 0 0 20px #ff6347, 0 0 40px #ff6347, 0 0 60px #ff6347;
-        transform: scale(1);
-      }
+.step {
+  background: linear-gradient(145deg, #3e3e5a, #2b2b42);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.step h2 {
+  color: #a970ff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.step p {
+  color: #e0e0e0;
+}
+
+.plans {
+  display: flex;
+  gap: 20px;
+}
+
+.plan {
+  background: linear-gradient(145deg, #2b2b42, #3e3e5a);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex: 1;
+}
+
+.plan h3 {
+  color: #a970ff;
+}
+
+button {
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+  background: linear-gradient(145deg, #8e24aa, #6a1b9a);
+  transform: scale(1.05);
+}
+
+/* Footer */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
+  color: white;
+  text-align: center;
+  padding: 10px 0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+footer a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #ffb74d;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
     }
   </style>
+  <script type="module" defer src="main.js"></script>
 </head>
 <body>
+  <header>
+    <h1>GrowIt - Investment Process</h1>
+  </header>
 
-  <div class="container">
-    <h1>Under Maintenance</h1>
-    <p>Our website is currently undergoing maintenance. We are working hard to bring you a better experience. Please check back later.</p>
-  </div>
+  <main>
+    <div class="investment-process">
+      <div class="step">
+        <h2>Step 1: Choose an Investment Plan</h2>
+        <p>Browse available plans with details about risk levels, returns, and terms. Select a plan that aligns with your investment goals.</p>
+        <div class="plans">
+          <div class="plan">
+            <h3>Low Risk Plan</h3>
+            <p>Expected Return: 5% annually</p>
+            <p>Terms: 1 year</p>
+          </div>
+          <div class="plan">
+            <h3>Medium Risk Plan</h3>
+            <p>Expected Return: 10% annually</p>
+            <p>Terms: 6 months</p>
+          </div>
+          <div class="plan">
+            <h3>High Risk Plan</h3>
+            <p>Expected Return: 20% annually</p>
+            <p>Terms: 3 months</p>
+          </div>
+        </div>
+      </div>
 
+      <div class="step">
+        <h2>Step 2: Add Funds</h2>
+        <p>Deposit money using bank transfers, credit cards, or e-wallets. Confirm the transaction through a secure payment gateway.</p>
+        <button>Deposit Now</button>
+      </div>
+
+      <div class="step">
+        <h2>Step 3: Track Your Investments</h2>
+        <p>Monitor the growth of your investments via the dashboard. Get updates on market trends to make informed decisions.</p>
+        <button>View Dashboard</button>
+      </div>
+
+      <div class="step">
+        <h2>Step 4: Withdraw Earnings</h2>
+        <p>Once the investment matures or meets withdrawal conditions, request a payout. Funds will be transferred to your preferred account.</p>
+        <button>Withdraw Earnings</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <a href="home.html">Home</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="investment.html">Investments</a>
+    <a href="profile.html">Profile</a>
+  </footer>
 </body>
 </html>

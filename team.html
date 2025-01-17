@@ -141,45 +141,53 @@
 
     async function fetchReferralData(userId) {
       try {
-        const userRef = ref(db, `users/${userId}/referralCode`);
+        // Fetch user data
+        const userRef = ref(db, `users/${userId}`);
         const userSnap = await get(userRef);
 
         if (userSnap.exists()) {
-          const referralCode = userSnap.val();
-          referralCodeElement.textContent = referralCode;
+          const userData = userSnap.val();
 
+          // Display referral code
+          referralCodeElement.textContent = userData.referralCode || "No referral code found.";
+
+          // Display referral link
           const currentDomain = window.location.origin;
-          referralLinkElement.textContent = `Referral Link: ${currentDomain}/register?ref=${referralCode}`;
+          referralLinkElement.textContent = `Referral Link: ${currentDomain}/register?ref=${userData.referralCode}`;
+
+          // Fetch referrals
+          const referralsRef = ref(db, `referrals/${userData.referralCode}`);
+          const referralsSnap = await get(referralsRef);
+
+          if (referralsSnap.exists()) {
+            const referrals = referralsSnap.val();
+            referralsListElement.innerHTML = ""; // Clear previous list
+
+            let totalCommission = 0;
+            for (const referral of referrals) {
+              const listItem = document.createElement("li");
+              listItem.classList.add("list-group-item");
+              listItem.textContent = `Email: ${referral.email}, Commission: ${referral.commission || 0} Naira`;
+              referralsListElement.appendChild(listItem);
+
+              totalCommission += referral.commission || 0;
+            }
+
+            commissionElement.textContent = `${totalCommission} Naira`;
+          } else {
+            referralsListElement.innerHTML = "<li class='list-group-item'>No referrals yet.</li>";
+            commissionElement.textContent = "0 Naira";
+          }
         } else {
           referralCodeElement.textContent = "No referral code found.";
           referralLinkElement.textContent = "";
-        }
-
-        const referralsRef = ref(db, `referrals/${userId}`);
-        const referralsSnap = await get(referralsRef);
-
-        if (referralsSnap.exists()) {
-          const referrals = referralsSnap.val();
-          referralsListElement.innerHTML = ""; // Clear previous list
-
-          let totalCommission = 0;
-          for (const refId in referrals) {
-            const referral = referrals[refId];
-            const listItem = document.createElement("li");
-            listItem.classList.add("list-group-item");
-            listItem.textContent = `Email: ${referral.email}, Commission: ${referral.commission} Naira`;
-            referralsListElement.appendChild(listItem);
-
-            totalCommission += referral.commission;
-          }
-
-          commissionElement.textContent = `${totalCommission} Naira`;
-        } else {
-          referralsListElement.innerHTML = "<li class='list-group-item'>No referrals yet.</li>";
           commissionElement.textContent = "0 Naira";
         }
       } catch (error) {
         console.error("Error fetching referral data:", error);
+        referralCodeElement.textContent = "Error loading referral code.";
+        referralLinkElement.textContent = "";
+        commissionElement.textContent = "0 Naira";
       }
     }
   </script>

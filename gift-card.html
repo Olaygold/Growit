@@ -5,6 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Redeem Gift Card</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    /* Dark theme with purple accents */
+    body {
+      background-color: #2e2e2e;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      background-color: #3a3a3a;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    h1, h3, h4 {
+      color: #9b59b6; /* Purple color */
+    }
+
+    .form-label, .btn-primary {
+      color: #9b59b6;
+    }
+
+    .form-control {
+      background-color: #555555;
+      color: #ffffff;
+      border: 1px solid #9b59b6;
+    }
+
+    .form-control:focus {
+      border-color: #9b59b6;
+      box-shadow: 0 0 5px rgba(155, 89, 182, 0.5);
+    }
+
+    .btn-primary {
+      background-color: #9b59b6;
+      border-color: #9b59b6;
+    }
+
+    .btn-primary:hover {
+      background-color: #8e44ad;
+      border-color: #8e44ad;
+    }
+
+    .alert {
+      margin-top: 20px;
+    }
+
+    /* Animation for the page load */
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .container {
+      animation: fadeIn 1s ease-out;
+    }
+
+    /* Graphic animation for the redemption history */
+    .list-group-item {
+      position: relative;
+      padding-left: 30px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .list-group-item:hover {
+      transform: scale(1.05);
+      background-color: #5e4b8b;
+    }
+
+    .list-group-item:before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background-color: #9b59b6;
+      border-radius: 50%;
+    }
+
+    .disabled-link {
+      pointer-events: none;
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Graphic effect for the result message */
+    .alert {
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      0% {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 <body>
 <div class="container mt-5">
@@ -31,13 +139,6 @@
     Do you want to withdraw your bonus?
     <a href="reedem-balance-withdrwal.html" id="myLink" class="disabled-link">Click here!</a>
   </div>
-  <style>
-    .disabled-link {
-      pointer-events: none;
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  </style>
 </div>
 
 <script type="module">

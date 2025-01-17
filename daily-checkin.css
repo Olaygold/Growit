@@ -1,60 +1,142 @@
+/* General Styles */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background: #f9f9f9;
-  color: #333;
+  background: linear-gradient(145deg, #2b2b42, #3e3e5a);
+  color: #e0e0e0;
 }
 
+/* Header */
 header {
-  background: #4caf50;
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
   color: white;
   text-align: center;
   padding: 15px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease-in-out;
 }
 
+header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* Main Section */
 main {
   padding: 20px;
+  animation: slideIn 1s ease-in-out;
 }
 
-.checkin-info, .checkin-section {
-  background: white;
+/* Check-In Info and Section */
+.checkin-info,
+.checkin-section {
+  background: linear-gradient(145deg, #3e3e5a, #2b2b42);
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
-.checkin-info h2, .checkin-section h2 {
-  color: #4caf50;
+.checkin-info h2,
+.checkin-section h2 {
+  color: #a970ff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+.checkin-info::before,
+.checkin-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(126, 87, 194, 0.4), transparent);
+  animation: rotateBg 10s linear infinite;
+  z-index: 0;
+}
+
+.checkin-info h2,
+.checkin-section h2,
+.checkin-info p,
+.checkin-section p {
+  position: relative;
+  z-index: 1;
+}
+
+/* Buttons */
 button {
-  background: #4caf50;
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
   color: white;
   border: none;
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
   border-radius: 5px;
+  transition: background 0.3s, transform 0.2s;
 }
 
 button:hover {
-  background: #45a049;
+  background: linear-gradient(145deg, #8e24aa, #6a1b9a);
+  transform: scale(1.05);
 }
 
+/* Footer */
 footer {
   position: fixed;
   bottom: 0;
   width: 100%;
-  background: #4caf50;
+  background: linear-gradient(145deg, #6a1b9a, #8e24aa);
   color: white;
   text-align: center;
   padding: 10px 0;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1.5s ease-in-out;
 }
 
 footer a {
   color: white;
   text-decoration: none;
   margin: 0 15px;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+footer a:hover {
+  color: #ffb74d;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes rotateBg {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

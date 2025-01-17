@@ -209,3 +209,39 @@ footer a:hover {
   color: #ffb74d; /* Gold color on hover */
   transform: scale(1.1); /* Slight zoom effect */
   }
+/* Announcement Section */
+#announcement {
+  background-color: #ffcc00;
+  padding: 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#announcement .announcement-content {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap; /* Prevents the text from wrapping */
+  animation: scroll-left 10s linear infinite; /* Animation to scroll left */
+}
+
+#announcement i {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+#announcement span {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Scrolling Animation */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%); /* Start off-screen to the right */
+  }
+  100% {
+    transform: translateX(-100%); /* End off-screen to the left */
+  }
+}

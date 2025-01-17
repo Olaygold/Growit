@@ -3,12 +3,12 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: #2c003e; /* Dark purple background */
+    color: #f4f4f9; /* Light text color for contrast */
 }
 
 header {
-    background-color: #007BFF;
+    background-color: #6a0dad; /* Purple header */
     color: white;
     text-align: center;
     padding: 10px 0;
@@ -19,12 +19,17 @@ header h1 {
 }
 
 a {
-    color: white;
+    color: #ffcc00; /* Gold link color */
     text-decoration: none;
     font-weight: bold;
     margin-top: 10px;
     display: block;
     text-align: center;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #ffd700; /* Brighter gold on hover */
 }
 
 /* Container for user info */
@@ -32,9 +37,9 @@ a {
     width: 80%;
     margin: 20px auto;
     padding: 20px;
-    background-color: white;
+    background-color: #3e007f; /* Deep purple container background */
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4); /* Strong shadow for depth */
 }
 
 .user-info {
@@ -42,17 +47,19 @@ a {
 }
 
 button {
-    background-color: #007BFF;
+    background-color: #6a0dad; /* Purple button background */
     color: white;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #4b0082; /* Darker purple on hover */
+    transform: scale(1.05); /* Slight zoom effect */
 }
 
 input[type="password"] {
@@ -60,7 +67,13 @@ input[type="password"] {
     margin: 10px 0;
     width: 100%;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #8a2be2; /* Purple border */
+    background-color: #3e007f; /* Deep purple input background */
+    color: white;
+}
+
+input[type="password"]::placeholder {
+    color: #d4af37; /* Gold placeholder text */
 }
 
 form {

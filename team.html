@@ -87,7 +87,7 @@
     import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-// Firebase configuration
+    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
       authDomain: "work-98965.firebaseapp.com",
@@ -102,7 +102,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-    
 
     const referralCodeElement = document.getElementById("referralCode");
     const referralLinkElement = document.getElementById("referralLink");
@@ -119,17 +118,18 @@
 
         // Generate referral code and link dynamically
         generateCodeBtn.addEventListener("click", async () => {
-  const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-  await set(ref(db, `users/${userId}/referralCode`), referralCode);
+          try {
+            const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+            await set(ref(db, `users/${userId}/referralCode`), referralCode);
 
-  // Get the current domain name from the browser
-  const currentDomain = window.location.origin;
+            // Get the current domain name from the browser
+            const currentDomain = window.location.origin;
 
-  // Generate the referral link pointing to index.html
-  const referralLink = `${currentDomain}/index.html?ref=${referralCode}`;
+            // Generate the referral link pointing to the register page
+            const referralLink = `${currentDomain}/index.html?ref=${referralCode}`;
 
-  referralCodeElement.textContent = referralCode;
-  referralLinkElement.textContent = `Referral Link: ${referralLink}`;
+            referralCodeElement.textContent = referralCode;
+            referralLinkElement.textContent = `Referral Link: ${referralLink}`;
           } catch (error) {
             console.error("Error generating referral code:", error);
           }

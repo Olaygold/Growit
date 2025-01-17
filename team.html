@@ -27,7 +27,6 @@
     .referral-title {
       font-size: 2.5rem;
       margin-bottom: 20px;
-      animation: fadeIn 2s ease-in-out;
     }
 
     .referral-card {
@@ -85,10 +84,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getDatabase, ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { getDatabase, ref, get, set, push } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
-    // Firebase configuration
+// Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
       authDomain: "work-98965.firebaseapp.com",
@@ -103,6 +102,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+    
 
     const referralCodeElement = document.getElementById("referralCode");
     const referralLinkElement = document.getElementById("referralLink");
@@ -118,33 +118,41 @@
         fetchReferralData(userId);
 
         // Generate referral code and link dynamically
-generateCodeBtn.addEventListener("click", async () => {
-  const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-  await set(ref(db, `users/${userId}/referralCode`), referralCode);
+        generateCodeBtn.addEventListener("click", async () => {
+          try {
+            const referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+            await set(ref(db, `users/${userId}/referralCode`), referralCode);
 
-  // Get the current domain name from the browser
-  const currentDomain = window.location.origin;
+            const currentDomain = window.location.origin;
+            const referralLink = `${currentDomain}/register?ref=${referralCode}`;
 
-  // Generate the referral link dynamically
-  const referralLink = `${currentDomain}/register?ref=${referralCode}`;
+            referralCodeElement.textContent = referralCode;
+            referralLinkElement.textContent = `Referral Link: ${referralLink}`;
+          } catch (error) {
+            console.error("Error generating referral code:", error);
+          }
+        });
+      } else {
+        window.location.href = "/login.html";
+      }
+    });
 
-  referralCodeElement.textContent = referralCode;
-  referralLinkElement.textContent = `Referral Link: ${referralLink}`;
-});
-        // Fetch referral code
+    async function fetchReferralData(userId) {
+      try {
         const userRef = ref(db, `users/${userId}/referralCode`);
         const userSnap = await get(userRef);
 
         if (userSnap.exists()) {
           const referralCode = userSnap.val();
           referralCodeElement.textContent = referralCode;
-          referralLinkElement.textContent = `Referral Link: https://yourwebsite.com/register?ref=${referralCode}`;
+
+          const currentDomain = window.location.origin;
+          referralLinkElement.textContent = `Referral Link: ${currentDomain}/register?ref=${referralCode}`;
         } else {
           referralCodeElement.textContent = "No referral code found.";
           referralLinkElement.textContent = "";
         }
 
-        // Fetch referrals
         const referralsRef = ref(db, `referrals/${userId}`);
         const referralsSnap = await get(referralsRef);
 

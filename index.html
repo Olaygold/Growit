@@ -16,14 +16,14 @@
     <h1>Welcome to GrowIt Agricultural Investment</h1>
     <p>Invest in agriculture and grow your wealth sustainably.</p>
 
-    <!-- Buttons to toggle between forms -->
+       <!-- Buttons to toggle between forms -->
     <div class="form-toggle">
       <button id="show-register" onclick="showForm('register')">Register</button>
       <button id="show-login" onclick="showForm('login')">Login</button>
     </div>
 
     <!-- Registration Form -->
-    <div id="register" class="form-section">
+    <div id="register-form" class="form-section">
       <h2>Register</h2>
       <input type="text" id="register-name" placeholder="Enter your full name">
       <input type="email" id="register-email" placeholder="Enter your email">
@@ -37,7 +37,7 @@
     </div>
 
     <!-- Login Form -->
-    <div id="login" class="form-section" style="display: none;">
+    <div id="login-form" class="form-section" style="display: none;">
       <h2>Login</h2>
       <input type="email" id="login-email" placeholder="Enter your email">
       <div class="password-container">
@@ -49,7 +49,6 @@
       <a href="password-reset.html" style="color: green; border: 1px solid green; padding: 5px; text-decoration: none;">Reset Password</a>
     </div>
   </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
@@ -73,8 +72,8 @@
 
     // Function to toggle between forms
     function showForm(formType) {
-      const registerForm = document.getElementById('register');
-      const loginForm = document.getElementById('login');
+      const registerForm = document.getElementById('register-form');
+      const loginForm = document.getElementById('login-form');
       if (formType === 'register') {
         registerForm.style.display = 'block';
         loginForm.style.display = 'none';

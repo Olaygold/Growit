@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Deposit</title>
-  <link rel="stylesheet" href="deposit.css">
+  <link rel="stylesheet" href="deposit.css" />
 </head>
 <body>
   <h1>Deposit Funds</h1>
@@ -12,120 +12,158 @@
 
   <form id="deposit-form">
     <label for="amount">Amount (min 100 Naira):</label>
-    <input type="number" id="amount" min="100" required>
+    <input type="number" id="amount" min="100" required />
     <button type="submit">Deposit</button>
   </form>
 
-  <script type="module" src="deposit.js"></script>
-  <script src="https://js.paystack.co/v1/inline.js"></script> <!-- Paystack Script -->
   <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
-  authDomain: "work-98965.firebaseapp.com",
-  databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
-  projectId: "work-98965",
-  storageBucket: "work-98965.appspot.com",
-  messagingSenderId: "755408416828",
-  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
-};
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
+      authDomain: "work-98965.firebaseapp.com",
+      databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
+      projectId: "work-98965",
+      storageBucket: "work-98965.appspot.com",
+      messagingSenderId: "755408416828",
+      appId: "1:755408416828:web:59f72561f27fb9ffa01339"
+    };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
 
-// Function to accumulate and store total deposit for each user
-function accumulateAndStoreTotalDeposits() {
-  get(ref(db, "deposits")).then((snapshot) => {
-    if (snapshot.exists()) {
-      const deposits = snapshot.val();
+    let currentUser = null;
 
-      // Iterate over each user and accumulate total deposit
-      for (const userId in deposits) {
-        let totalDeposit = 0;
+    // Fetch current balance
+    function fetchBalance() {
+      const userRef = ref(db, `users/${currentUser.uid}`);
+      get(userRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          document.getElementById("current-balance").innerText = data.balance || 0;
+        }
+      }).catch(err => console.error(err));
+    }
 
-        // Iterate over each deposit of the user
-        for (const depositId in deposits[userId]) {
-          totalDeposit += deposits[userId][depositId].amount || 0;
+    // OPay Checkout
+    async function startOpayCheckout(amount, email) {
+      const reference = "OPAY" + new Date().getTime();
+
+      const body = {
+        amount: amount * 100,
+        reference: reference,
+        currency: "NGN",
+        returnUrl: `https://olaygold.github.io/Growit/deposit-success.html?ref=${reference}&amount=${amount}`,
+        customerEmail: email,
+        paymentMethod: "CARD"
+      };
+
+      try {
+        const res = await fetch("https://sandboxapi.opaycheckout.com/api/v3/transaction/initialize", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer OPAYPUB17479001665220.25637491704034554",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
+        });
+
+        const result = await res.json();
+
+        if (result?.data?.cashierUrl) {
+          window.location.href = result.data.cashierUrl;
+        } else {
+          alert("Failed to start payment");
+          console.log(result);
+        }
+      } catch (err) {
+        alert("Payment error");
+        console.error(err);
+      }
+    }
+
+    // Submit Deposit Form
+    document.getElementById("deposit-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (amount < 100) {
+        alert("Minimum deposit is 100 Naira.");
+        return;
+      }
+
+      startOpayCheckout(amount, currentUser.email);
+    });
+
+    // Auth
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        fetchBalance();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    // Optional: update total deposits after redirection on success page
+    window.updateBalance = async function(amount) {
+      const userRef = ref(db, `users/${currentUser.uid}`);
+      const depositId = Date.now();
+
+      try {
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) return;
+
+        const userData = snapshot.val();
+        const newBalance = (userData.balance || 0) + amount;
+        const referralCode = userData.referralCode;
+        const isFirstDeposit = !userData.firstDeposit;
+
+        await update(userRef, { balance: newBalance, firstDeposit: true });
+
+        await set(ref(db, `deposits/${currentUser.uid}/${depositId}`), {
+          amount,
+          timestamp: new Date().toISOString(),
+          status: "successful",
+          userEmail: currentUser.email
+        });
+
+        if (referralCode && isFirstDeposit) {
+          const refSnapshot = await get(ref(db, `users/${referralCode}`));
+          if (refSnapshot.exists()) {
+            const referrerData = refSnapshot.val();
+            const commission = amount * 0.20;
+            const newRefBalance = (referrerData.balance || 0) + commission;
+
+            await update(ref(db, `users/${referralCode}`), { balance: newRefBalance });
+
+            const referralId = Date.now();
+            await set(ref(db, `referrals/${referralCode}/${referralId}`), {
+              email: currentUser.email,
+              commission
+            });
+          }
         }
 
-        // Store the total deposit for the user
-        const totalDepositsRef = ref(db, `users/${userId}/totalDeposits`);
-        set(totalDepositsRef, totalDeposit)
-          .then(() => {
-            console.log(`Total deposit for user ${userId} updated successfully!`);
-          })
-          .catch(console.error);
+        alert("Deposit successful and balance updated!");
+        fetchBalance();
+      } catch (error) {
+        console.error("Error updating balance:", error);
       }
-    } else {
-      console.log("No deposits found.");
-    }
-  }).catch(console.error);
-}
-
-// Call function to accumulate and store total deposits
-accumulateAndStoreTotalDeposits();
+    };
   </script>
-  <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAELWzVQZiw2PxbNUT3-YK4a6KPHfYkdZ4",
-  authDomain: "work-98965.firebaseapp.com",
-  databaseURL: "https://work-98965-default-rtdb.firebaseio.com",
-  projectId: "work-98965",
-  storageBucket: "work-98965.appspot.com",
-  messagingSenderId: "755408416828",
-  appId: "1:755408416828:web:59f72561f27fb9ffa01339"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// Function to update total deposit for a user
-async function updateTotalDeposit(userId, depositAmount) {
-  try {
-    const userDepositRef = ref(db, `users/${userId}/totalDeposits`);
-
-    // Get the current total deposit amount
-    const snapshot = await get(userDepositRef);
-    let currentTotalDeposit = snapshot.exists() ? snapshot.val() : 0;
-    currentTotalDeposit += depositAmount;
-
-    // Update the total deposit in the database
-    await update(userDepositRef, {
-      totalDeposits: currentTotalDeposit
-    });
-    console.log("Total deposit updated successfully!");
-  } catch (error) {
-    console.error("Error updating total deposit:", error);
-  }
-}
-
-// Example usage
-const userId = "user123"; // Replace with actual user ID
-const depositAmount = 500; // The deposit amount made by the user
-
-updateTotalDeposit(userId, depositAmount);
-  </script>
+  <!-- Fixed Bottom Navigation -->
   <footer style="position: fixed; bottom: 0; width: 100%; background: linear-gradient(145deg, #7e57c2, #5e35b1); color: white; padding: 10px 0; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.3); z-index: 1000;">
-  <a href="home.html" style="text-decoration: none; color: white; font-size: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.3s ease, transform 0.3s ease;">
-    Home
-  </a>
-  <a href="dashboard.html" style="text-decoration: none; color: white; font-size: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.3s ease, transform 0.3s ease;">
-    Dashboard
-  </a>
-  <a href="investment.html" style="text-decoration: none; color: white; font-size: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.3s ease, transform 0.3s ease;">
-    Stocks
-  </a>
-  <a href="profile.html" style="text-decoration: none; color: white; font-size: 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 5px; transition: color 0.3s ease, transform 0.3s ease;">
-    Me
-  </a>
-</footer>
+    <a href="home.html" style="text-decoration: none; color: white; font-size: 14px;">Home</a>
+    <a href="dashboard.html" style="text-decoration: none; color: white; font-size: 14px;">Dashboard</a>
+    <a href="investment.html" style="text-decoration: none; color: white; font-size: 14px;">Stocks</a>
+    <a href="profile.html" style="text-decoration: none; color: white; font-size: 14px;">Me</a>
+  </footer>
 </body>
 </html>
